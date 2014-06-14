@@ -1,0 +1,39 @@
+{% include 'header.html' %}
+            <!-- graph itself -->
+            <p id="chart_paragraph">
+				<h1>
+					Super puper graph!
+				</h1>
+
+				<body>
+                <div class="row">
+                    <div class="col-xs-11">
+				    	<div id="chart"></div> 
+                    </div>
+                    <div class="col-xs-1">
+                    <div id="legend"></div>
+                    </div>
+                </div>
+				</body>
+			</p>
+            <p class="bg-danger logging_p"></p>
+
+
+<!-- close header divs -->
+	</div>
+</div>
+
+{% include 'script.html' %}
+
+{% autoescape false %}
+<script>
+        var graphs_view_hash = JSON.parse('{{ graph }}');
+        var graphs_data_hash = {};
+        $(function() {
+            for (k in graphs_view_hash) {
+                get_graph_data(k, graphs_view_hash[k]['url'], graphs_view_hash[k]['graph_name']);
+            }
+       });
+    </script>
+{% endautoescape %}
+{% include 'footer.html' %}

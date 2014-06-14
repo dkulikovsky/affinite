@@ -1,0 +1,30 @@
+{% include 'header.html' %}
+
+<table class="table table-hover">
+        <tr>
+                <td>#</td>
+                <td>Graph name</td>
+                <td></td>
+        </tr>
+                {% for graph in graphs_list %}
+                <tr>
+                <td>{{ loop.index }}</td>
+                <td><a href="show_graph?graph_name={{ graph }}">{{ graph }}</a></td>
+                <td><a type='button' class='btn btn-danger btn-xs' onClick="delete_graph('{{ graph }}')">X</a></td>
+                </tr>
+                {% endfor %}
+</table>
+
+<script>
+        function delete_graph(name) {
+            $.get("remove_graph?graph_name="+name).done(function( data ) {
+                alert( "Remove graph:" + data );
+                location.reload();
+            });
+
+        }
+</script>
+<!-- close header divs -->
+	</div>
+</div>
+{% include 'footer.html' %}

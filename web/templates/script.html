@@ -1,0 +1,79 @@
+<script>
+	var graph = new Rickshaw.Graph( {
+	    element: document.querySelector("#chart"),
+	    stroke: true,
+	    renderer: 'multi',
+	    width: $('#chart').parent().width(),
+	    height: 500,
+	    series: []
+	} );
+	
+	graph.render();
+	
+	var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+	    graph: graph
+	} );
+	
+	var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+	    graph: graph
+	} );
+	
+	var xAxis = new Rickshaw.Graph.Axis.X({
+	    graph: graph
+	});
+	
+	xAxis.render();
+	var yAxis = new Rickshaw.Graph.Axis.Y({
+	    graph: graph
+	});
+	
+	yAxis.render();
+
+	var legend = new Rickshaw.Graph.Legend({
+	    graph: graph,
+	    element: document.querySelector('#legend')
+	});
+
+    // all graphs will be stored in this hash
+    // it's used to rebuild graphs with cleaning old data
+    var graphs_view_hash = {};
+    var graphs_data_hash = {};
+
+    function get_graph_data(graph_id, url, graph_name) {
+	     $.ajax({
+	        url: url,
+	        type: 'GET',
+	        dataType: 'json', // added data type
+	        success: function(res) {
+                res.name = graph_name;
+	            graphs_data_hash[graph_id] = res;
+                render_graph();
+            },
+            error: function (jqobj,status_str) {
+                    alert(status_str);
+            }
+	    });
+    }
+
+    function render_graph() {
+        graph.series.splice(0, graph.series.length);
+        for (k in graphs_data_hash) {
+            graph.series.push(graphs_data_hash[k]);
+        }
+    	xAxis.render();
+    	yAxis.render();
+        legend.render();
+        graph.update();
+    }
+
+	function simple_hash(str) {
+	   var hash = 0;
+	   if (str.length == 0) return hash;
+	   for (i = 0; i < str.length; i++) {
+	       char = str.charCodeAt(i);
+	       hash = ((hash<<5)-hash)+char;
+	       hash = hash & hash; // Convert to 32bit integer
+	   }
+	   return hash;
+	}
+</script>
