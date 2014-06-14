@@ -1,0 +1,11 @@
+Source: graphitestat
+Section: misc
+Priority: extra
+Maintainer: Kulikovsky Dmitry <dkulikovsky@yandex-team.ru>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+
+Package: graphitestat
+Architecture: all
+Depends: python-flask, redis-server, multiwatch, python-redis, python-flup, python-numpy, nginx
+Description: graphite data in affinite coordinates

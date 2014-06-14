@@ -1,0 +1,111 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          graphitestat
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Example initscript
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+
+# Author: Semen Slepov <slepovss@yandex-team.ru>
+#
+# Please remove the "Author" lines above and replace them
+# with your own name if you copy and modify this script.
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="graphitestat service"
+NAME="graphitestat"
+HUNTER_FCGI_BIN=/var/lib/graphitestat/graphitestat_fcgi.py
+SPAWN_FCGI=/usr/bin/spawn-fcgi
+MULTIWATCH=/usr/bin/multiwatch
+FORK_COUNT=60
+SPAWN_FCGI_ARGS="-n -p 9002 -u www-data -g www-data"
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Exit if the package is not installed
+[ -x "$SPAWN_FCGI" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+do_start()
+{
+	log_daemon_msg "Starting $DESC: " "$NAME"
+	if [ "x$(pgrep -f $HUNTER_FCGI_BIN)" != "x" ]; then
+		echo "$NAME is already running!"
+		exit 0;
+	fi
+	
+	#starting graphitestat through spawn-fcgi
+	start-stop-daemon --start --quiet -b --exec $SPAWN_FCGI -- $SPAWN_FCGI_ARGS -- $MULTIWATCH -f $FORK_COUNT $HUNTER_FCGI_BIN
+	log_daemon_msg "done" "$NAME"
+}
+
+do_stop()
+{
+	log_daemon_msg "Stopping $DESC: " "$NAME"
+
+	if [ "x$(pgrep -f $HUNTER_FCGI_BIN)" == "x" ]; then
+		echo "Nothing to stop!"
+		exit 0
+	fi
+
+	pkill -9 -f $HUNTER_FCGI_BIN
+	log_daemon_msg "done" "$NAME"
+}
+
+do_restart() {
+	pkill -9 -f $HUNTER_FCGI_BIN
+	start-stop-daemon --start --quiet -b --exec $SPAWN_FCGI -- $SPAWN_FCGI_ARGS -- $MULTIWATCH -f $FORK_COUNT $HUNTER_FCGI_BIN
+}
+
+case "$1" in
+  start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  status)
+       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+       ;;
+  restart|force-reload)
+	#
+	# If the "reload" option is implemented then remove the
+	# 'force-reload' alias
+	#
+	log_daemon_msg "Restarting $DESC" "$NAME"
+	do_restart
+	;;
+  *)
+	#echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
+
+:
