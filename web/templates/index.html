@@ -119,7 +119,7 @@
         var renderer = p.find("#renderer").val();
         var graph_name = p.find("#graph_name").val();
         
-        var url = "http://localhost:5000/data?x_metric="+x_metric+"&y_metric="+y_metric+"&from="+from+"&renderer="+renderer+"&delta="+delta+"&type="+func+"&color="+color;
+        var url = "/affinite/data?x_metric="+x_metric+"&y_metric="+y_metric+"&from="+from+"&renderer="+renderer+"&delta="+delta+"&type="+func+"&color="+color;
 
         graph_id = p.find('.graph_id').val();
         if (!graph_id) {
@@ -162,7 +162,7 @@
     function save_graph(frm) {
         var new_graph_name = $(frm).parent().find("#new_graph_name").val();
         if (new_graph_name) {
-            $.post( "save_graph", { graph_settings: JSON.stringify(graphs_view_hash), graph_name: new_graph_name }).done(function( data ) {
+            $.post( "/affinite/save_graph", { graph_settings: JSON.stringify(graphs_view_hash), graph_name: new_graph_name }).done(function( data ) {
                 alert( "Data Loaded: " + data );
             });
         } else {

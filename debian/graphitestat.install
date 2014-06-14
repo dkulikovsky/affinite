@@ -1,3 +1,0 @@
-web/* var/lib/graphitestat/
-etc/25graphitestat.conf etc/nginx/sites-enabled/
-web/resources/* var/www/gstat_static/

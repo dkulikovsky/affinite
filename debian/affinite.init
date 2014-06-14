@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          graphitestat
+# Provides:          affinite
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -19,9 +19,9 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="graphitestat service"
-NAME="graphitestat"
-HUNTER_FCGI_BIN=/var/lib/graphitestat/graphitestat_fcgi.py
+DESC="affinite service"
+NAME="affinite"
+HUNTER_FCGI_BIN=/var/lib/affinite/affinite_fcgi.py
 SPAWN_FCGI=/usr/bin/spawn-fcgi
 MULTIWATCH=/usr/bin/multiwatch
 FORK_COUNT=60
@@ -50,7 +50,7 @@ do_start()
 		exit 0;
 	fi
 	
-	#starting graphitestat through spawn-fcgi
+	#starting affinite through spawn-fcgi
 	start-stop-daemon --start --quiet -b --exec $SPAWN_FCGI -- $SPAWN_FCGI_ARGS -- $MULTIWATCH -f $FORK_COUNT $HUNTER_FCGI_BIN
 	log_daemon_msg "done" "$NAME"
 }
