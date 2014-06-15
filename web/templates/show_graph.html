@@ -18,22 +18,116 @@
 			</p>
             <p class="bg-danger logging_p"></p>
 
-
+         <div id="data_container">
+         </div> <!-- END of data_container -->
+         <p class="text-right"><button class="btn btn-default" id="add_data_button">Add data</button></p> 
+		</div>
 <!-- close header divs -->
 	</div>
 </div>
+            <!-- data form -->
+           <div class="well well-sm hidden graph_div">
+           <div class="highlight">
+			<form role="form" class="data_form">
+            <input type="text" class="graph_id hidden">
+                <div class="row">
+                    <div class="col-xs-3">
+                         <input type="text" class="form-control" id="graph_name" value='noname'>
+                    </div>
+                    <div align="right" class="col-xs-9"><button type="button" onClick="remove_graph($(this))" class="close remove_graph" aria-hidden="true">&times;</button></button></div>
+                </div>
+				<div class="form-group">
+					 <label for="x_metric">X-Axis data</label><input type="text" class="form-control" id="x_metric" value="sumSeries(keepLastValue(one_min.bsst1-01h_rt.requests.*))">
+				</div>
+				<div class="form-group">
+					 <label for="y_metric">Y-Axis data</label><input type="text" class="form-control" id="y_metric" value="keepLastValue(one_min.bsst1-01h_rt.phantom_stat.utilization.work_scheduler_pool)">
+				</div>
+   				<div class="row">
+				  <div class="col-xs-3">
+    				<div class="form-group">
+                    <label for="datetimepicker1">Start date</label>
+	                <div class='input-group date datetimepicker1'>
+	                    <input type='text' class="form-control" id='datetimepicker_data' />
+	                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+	                    </span>
+	                </div>
+					<p class="help-block">
+						Set start date for analysis
+					</p>
+    				</div>
+                  </div>
+
+				  <div class="col-xs-2">
+                    <label for="delta">Delta</label>
+				    <input type="text" class="form-control" placeholder="86400" id="delta" value="86400">
+				  </div>
+                  <div class="col-xs-2">
+		                <label for="gtype">Function</label>
+						<select id="gtype" class="form-control">
+						  <option>raw</option>
+						  <option>polyfit</option>
+						</select>
+				  </div>
+                  <div class="col-xs-2">
+		                <label for="renderer">Graph type</label>
+						<select id="renderer" class="form-control">
+						  <option>scatterplot</option>
+						  <option selected>line</option>
+						  <option>area</option>
+						</select>
+				  </div>
+                  <div class="col-xs-2">
+		                <label for="color">Color</label>
+						<select id="color" class="form-control">
+						  <option>red</option>
+						  <option>green</option>
+						  <option>blue</option>
+						  <option>orange</option>
+						  <option>pink</option>
+						</select>
+				  </div>
+				</div>
+                <a id="data_submit" onClick="submit_data($(this))" class="btn btn-default">Add</a>
+			</form>
+           </div>
+           </div>
+            <!-- END data form -->
+
+
 
 {% include 'script.html' %}
 
 {% autoescape false %}
 <script>
+    function load_datetimePicker () {
+        $('.datetimepicker1').datetimepicker({
+             format: 'DD/MM/YY HH:mm',
+             pick12HourFormat: false
+        });
+    };
+
+    $(load_datetimePicker);
+
+
         var graphs_view_hash = JSON.parse('{{ graph }}');
         var graphs_data_hash = {};
         $(function() {
             for (k in graphs_view_hash) {
                 get_graph_data(k, graphs_view_hash[k]['url'], graphs_view_hash[k]['graph_name']);
+                var form_html = $('.graph_div:last').clone(false).appendTo('#data_container');
+                form_html.find('#id').val(k);
+                form_html.find('#color').val(graphs_view_hash[k].color);
+                form_html.find('#delta').val(graphs_view_hash[k].delta);
+                form_html.find('#from').val(moment(graphs_view_hash[k].from).format('DD/MM/YY HH:mm'));
+                form_html.find('#graph_name').val(graphs_view_hash[k].graph_name);
+                form_html.find('#x_metric').val(graphs_view_hash[k].x);
+                form_html.find('#y_metric').val(graphs_view_hash[k].y);
+                form_html.find('#renderer').val(graphs_view_hash[k].renderer);
+                load_datetimePicker();
             }
        });
     </script>
 {% endautoescape %}
+	
+{% include 'builder_scripts.html' %}
 {% include 'footer.html' %}
