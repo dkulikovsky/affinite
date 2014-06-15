@@ -95,6 +95,18 @@
 
 {% include 'script.html' %}
 
+
 {% include 'builder_scripts.html' %}
-		
+
+<script>
+    function load_datetimePicker () {
+        $('.datetimepicker1').datetimepicker({
+             format: 'DD/MM/YY HH:mm',
+             pick12HourFormat: false
+        });
+    };
+
+    $(load_datetimePicker);
+</script>
+
 {% include 'footer.html' %}

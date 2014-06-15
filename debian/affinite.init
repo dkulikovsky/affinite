@@ -24,8 +24,8 @@ NAME="affinite"
 HUNTER_FCGI_BIN=/var/lib/affinite/affinite_fcgi.py
 SPAWN_FCGI=/usr/bin/spawn-fcgi
 MULTIWATCH=/usr/bin/multiwatch
-FORK_COUNT=60
-SPAWN_FCGI_ARGS="-n -p 9002 -u www-data -g www-data"
+FORK_COUNT=4
+SPAWN_FCGI_ARGS="-n -p 9007 -u www-data -g www-data"
 SCRIPTNAME=/etc/init.d/$NAME
 
 # Exit if the package is not installed
