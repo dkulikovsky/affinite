@@ -101,6 +101,7 @@
 <script>
     function load_datetimePicker () {
         $('.datetimepicker1').datetimepicker({
+             defaultDate: moment().subtract('days', 1).format('DD/MM/YY HH:mm'),
              format: 'DD/MM/YY HH:mm',
              pick12HourFormat: false
         });
