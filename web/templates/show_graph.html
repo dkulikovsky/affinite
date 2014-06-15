@@ -118,11 +118,12 @@
                 form_html.find('#id').val(k);
                 form_html.find('#color').val(graphs_view_hash[k].color);
                 form_html.find('#delta').val(graphs_view_hash[k].delta);
-                form_html.find('#from').val(moment(graphs_view_hash[k].from).format('DD/MM/YY HH:mm'));
+                form_html.find('#datetimepicker_data').val(moment(graphs_view_hash[k].from,'s').format('DD/MM/YY HH:mm'));
                 form_html.find('#graph_name').val(graphs_view_hash[k].graph_name);
                 form_html.find('#x_metric').val(graphs_view_hash[k].x);
                 form_html.find('#y_metric').val(graphs_view_hash[k].y);
                 form_html.find('#renderer').val(graphs_view_hash[k].renderer);
+                form_html.removeClass('hidden');
                 load_datetimePicker();
             }
        });

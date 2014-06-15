@@ -13,6 +13,7 @@ from libgraphitestat.frontstat_web import FrontStatModel
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+url_prefix = '/affinite'
 
 
 @app.before_request
@@ -30,11 +31,11 @@ def teardown_request(exception):
     if hasattr(g, 'db'):
         pass
 
-@app.route('/', methods = ['GET',])
+@app.route(url_prefix+'/', methods = ['GET',])
 def frontstat():
     return render_template("index.html")
 
-@app.route('/remove_graph', methods = ['GET',])
+@app.route(url_prefix+'/remove_graph', methods = ['GET',])
 def remove_graph():
     try:
         name = request.args.get("graph_name")
@@ -47,7 +48,7 @@ def remove_graph():
         app.logger.debug("removed %s" % name)
     return "OK"
 
-@app.route('/save_graph', methods = ['POST',])
+@app.route(url_prefix+'/save_graph', methods = ['POST',])
 def save_graph():
     try:
         name = request.form.get("graph_name")
@@ -61,12 +62,12 @@ def save_graph():
     app.logger.debug("%s: [ %s ]" % (name, graph))
     return "OK"
 
-@app.route('/list_graphs', methods = ['GET', ])
+@app.route(url_prefix+'/list_graphs', methods = ['GET', ])
 def list_graphs():
     glist = g.db.smembers("graphs_list")
     return render_template("graphs_list.html", graphs_list = glist)
 
-@app.route('/show_graph', methods = ['GET', ])
+@app.route(url_prefix+'/show_graph', methods = ['GET', ])
 def show_graph():
     try:
         name = request.args.get("graph_name")
@@ -80,7 +81,7 @@ def show_graph():
         return list_graphs()
     return render_template("show_graph.html", graph = graph)
 
-@app.route('/data', methods =  ['GET', ])
+@app.route(url_prefix+'/data', methods =  ['GET', ])
 def json_data():
     try:
         x = request.args.get('x_metric')
