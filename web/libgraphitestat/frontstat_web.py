@@ -97,11 +97,18 @@ class FrontStatModel():
         plt.plot(self.d[:,0], res, label=title, linewidth=1)
         return 1
 
-    def calculate_polyf(self, x, y, pfrom, delta):
+    def calculate_polyf(self, x, y, pfrom, delta, degree):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
-        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 5))
+        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree))
         return 1
+
+    def calculate_weighted(self, x, y, pfrom, delta):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        self.weighted_data = self.get_strong_points()
+        return 1
+
 
     def get_raw_data(self, x, y, pfrom, delta):
         self.pfrom = pfrom

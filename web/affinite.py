@@ -16,7 +16,7 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.config.from_object(__name__)
 url_prefix = '/affinite'
-handler = RotatingFileHandler('/var/log/affinite/affinite.log', maxBytes=10000, backupCount=1)
+handler = RotatingFileHandler('./affinite.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.DEBUG)
 app.logger.addHandler(handler)
 
@@ -115,10 +115,17 @@ def json_data():
     if gtype == "raw":
         stat.get_raw_data(x, y, int(pfrom), int(delta))
         raw_data = np.column_stack((stat.d[:,0], stat.d[:,1]))
-    elif gtype == "polyfit":
-        stat.calculate_polyf(x, y, int(pfrom), int(delta))
+    elif re.match('polyfit (\d+)',gtype):
+        degree = re.match('polyfit (\d+)',gtype).group(1)
+        if not degree:
+            app.logger.error("polynomial degree is not defined")
+            return json.dumps({ "status": "error", "msg": "polynomial degree is not defined"})
+        stat.calculate_polyf(x, y, int(pfrom), int(delta), int(degree))
         raw_data = np.column_stack((stat.d[:,0], stat.f(stat.d[:,0])))
-
+    elif gtype == "weighted":
+        stat.calculate_weighted(x, y, int(pfrom), int(delta))
+        raw_data = np.column_stack((stat.weighted_data[:,0], stat.weighted_data[:,1]))
+    
     # remove NaNs
     datapoints =  []
     for rx,ry in raw_data.tolist():
@@ -130,10 +137,10 @@ def json_data():
             }
 
     return json.dumps(data)
-    
-#@app.route('/gstat_static/<path:filename>')
-#def send_pic(filename):
-#    return send_from_directory('./resources/', filename)
+   
+@app.route('/gstat_static/<path:filename>')
+def send_pic(filename):
+    return send_from_directory('./resources/', filename)
  
 if __name__ == '__main__':
     app.debug = True
