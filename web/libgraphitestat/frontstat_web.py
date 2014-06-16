@@ -103,6 +103,12 @@ class FrontStatModel():
         self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 5))
         return 1
 
+    def get_raw_data(self, x, y, pfrom, delta):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        return 1
+
+
     def get_xy_data(self, x_metric, y_metric, pfrom, delta=86400):
         x = np.array(graphite_data(self.graphite_server, x_metric, pfrom, pfrom + delta))
         y = np.array(graphite_data(self.graphite_server, y_metric, pfrom, pfrom + delta))

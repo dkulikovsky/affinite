@@ -7,7 +7,7 @@ import redis
 import numpy as np
 
 from random import sample
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
+from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, send_from_directory
 from flup.server.fcgi import WSGIServer
 from libgraphitestat.frontstat_web import FrontStatModel
 import logging
@@ -19,7 +19,6 @@ url_prefix = '/affinite'
 handler = RotatingFileHandler('/var/log/affinite/affinite.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.DEBUG)
 app.logger.addHandler(handler)
-
 
 @app.before_request
 def before_request():
@@ -110,22 +109,33 @@ def json_data():
     # try to build frontstat module from this input
 #    try:
     stat = FrontStatModel(debug=1, graphite_server=graphite_server)
-    stat.calculate_polyf(x, y, int(pfrom), int(delta))
 #    except Exception, e:
 #        app.logger.error("Failed to build fronstat model %s" % e)
 #        abort(500)
     if gtype == "raw":
+        stat.get_raw_data(x, y, int(pfrom), int(delta))
         raw_data = np.column_stack((stat.d[:,0], stat.d[:,1]))
     elif gtype == "polyfit":
+        stat.calculate_polyf(x, y, int(pfrom), int(delta))
         raw_data = np.column_stack((stat.d[:,0], stat.f(stat.d[:,0])))
 
-    data = { "data": [ { "x": x, "y": y } for x,y in raw_data.tolist() ],
+    # remove NaNs
+    datapoints =  []
+    for rx,ry in raw_data.tolist():
+        datapoints.append({ "x": np.nan_to_num(rx), "y": np.nan_to_num(ry) })
+
+    data = { "data": datapoints,
              "renderer": renderer,
              "color": color
             }
 
     return json.dumps(data)
     
+#@app.route('/gstat_static/<path:filename>')
+#def send_pic(filename):
+#    return send_from_directory('./resources/', filename)
+ 
 if __name__ == '__main__':
     app.debug = True
     app.run(host='0.0.0.0')
+   

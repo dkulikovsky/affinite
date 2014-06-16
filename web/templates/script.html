@@ -54,8 +54,11 @@
                 res.name = graph_name;
                 if (res.color == 'random') {
                     res.color = palette.color();
-                    console.log('color'+res.color);
                 }
+                if (res.color == '') {
+                    res.color = palette.color();
+                }
+                console.log('color'+res.color);
 	            graphs_data_hash[graph_id] = res;
                 render_graph();
             },
