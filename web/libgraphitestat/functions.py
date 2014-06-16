@@ -13,8 +13,8 @@ def get_derivative(d, f, xs):
     xy = np.column_stack((xs,dy))
     return xy
 
-def graphite_data(metric, pfrom, until):
-    q = lg.Query('https://bsgraphite.yandex-team.ru') \
+def graphite_data(graphite_server, metric, pfrom, until):
+    q = lg.Query('http://%s' % graphite_server) \
         .target('%s' % metric) \
         .pfrom(pfrom).puntil(until)
     print q._url()
@@ -25,7 +25,7 @@ def graphite_data(metric, pfrom, until):
     return res_data
 
 def graphite_data_mc(metric, pfrom, until):
-    q = lg.Query('https://bsgraphite.yandex-team.ru') \
+    q = lg.Query('http://bsgraphite.yandex-team.ru') \
         .target('%s' % metric) \
         .pfrom(pfrom).puntil(until)
     print q._url()

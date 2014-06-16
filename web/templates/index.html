@@ -1,76 +1,8 @@
 {% include 'header.html' %} 
 {% include 'chart.html' %}
          <div id="data_container">
-            <!-- data form -->
-           <div class="well well-sm">
-           <div class="highlight">
-			<form role="form" class="data_form">
-            <input type="text" class="graph_id hidden">
-                <div class="row">
-                    <div class="col-xs-3">
-                         <input type="text" class="form-control" id="graph_name" value='noname'>
-                    </div>
-                    <div align="right" class="col-xs-9"><button type="button" onClick="remove_graph($(this))" class="close remove_graph" aria-hidden="true">&times;</button></button></div>
-                </div>
-				<div class="form-group">
-					 <label for="x_metric">X-Axis data</label><input type="text" class="form-control" id="x_metric" value="sumSeries(keepLastValue(one_min.bsst1-01h_rt.requests.*))">
-				</div>
-				<div class="form-group">
-					 <label for="y_metric">Y-Axis data</label><input type="text" class="form-control" id="y_metric" value="keepLastValue(one_min.bsst1-01h_rt.phantom_stat.utilization.work_scheduler_pool)">
-				</div>
-   				<div class="row">
-				  <div class="col-xs-3">
-    				<div class="form-group">
-                    <label for="datetimepicker1">Start date</label>
-	                <div class='input-group date datetimepicker1'>
-	                    <input type='text' class="form-control" id='datetimepicker_data' />
-	                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-	                    </span>
-	                </div>
-					<p class="help-block">
-						Set start date for analysis
-					</p>
-    				</div>
-                  </div>
-
-				  <div class="col-xs-2">
-                    <label for="delta">Delta</label>
-				    <input type="text" class="form-control" placeholder="86400" id="delta" value="86400">
-				  </div>
-                  <div class="col-xs-2">
-		                <label for="gtype">Function</label>
-						<select id="gtype" class="form-control">
-						  <option>raw</option>
-						  <option>polyfit</option>
-						</select>
-				  </div>
-                  <div class="col-xs-2">
-		                <label for="renderer">Graph type</label>
-						<select id="renderer" class="form-control">
-						  <option>scatterplot</option>
-						  <option selected>line</option>
-						  <option>area</option>
-						</select>
-				  </div>
-                  <div class="col-xs-2">
-		                <label for="color">Color</label>
-						<select id="color" class="form-control">
-                          <option selected>random</option>                                
-						  <option>red</option>
-						  <option>green</option>
-						  <option>blue</option>
-						  <option>orange</option>
-						  <option>pink</option>
-						</select>
-				  </div>
-				</div>
-                <a id="data_submit" onClick="submit_data($(this))" class="btn btn-default">Add</a>
-			</form>
-           </div>
-           </div>
-            <!-- END data form -->
-
-          </div> <!-- END of data_container -->
+                 {% include 'data_form.html' %}
+         </div> <!-- END of data_container -->
           <p class="text-right"><button class="btn btn-default" id="add_data_button">Add data</button></p> 
 		</div>
 	</div>
@@ -91,6 +23,7 @@
     };
 
     $(load_datetimePicker);
+    $('.graph_div').removeClass('hidden');
 </script>
 
 {% include 'footer.html' %}

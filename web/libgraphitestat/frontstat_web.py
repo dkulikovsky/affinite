@@ -8,9 +8,10 @@ from  libgraphitestat.functions import *
 from math import exp
 
 class FrontStatModel():
-    def __init__(self, debug, ylim = 0):
+    def __init__(self, debug, ylim = 0, graphite_server='bsgraphite.yandex-team.ru'):
         self.debug = debug
         self.ylim = ylim
+        self.graphite_server = graphite_server
 
     def weight(self, d, x, y):
         radius = 50 # +-100 rps and ms
@@ -103,8 +104,8 @@ class FrontStatModel():
         return 1
 
     def get_xy_data(self, x_metric, y_metric, pfrom, delta=86400):
-        x = np.array(graphite_data(x_metric, pfrom, pfrom + delta))
-        y = np.array(graphite_data(y_metric, pfrom, pfrom + delta))
+        x = np.array(graphite_data(self.graphite_server, x_metric, pfrom, pfrom + delta))
+        y = np.array(graphite_data(self.graphite_server, y_metric, pfrom, pfrom + delta))
         if y.shape[0] != x.shape[0]:
             y = y[:x.shape[0]]
         d = np.column_stack((x,y))

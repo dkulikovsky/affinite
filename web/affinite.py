@@ -10,10 +10,15 @@ from random import sample
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 from flup.server.fcgi import WSGIServer
 from libgraphitestat.frontstat_web import FrontStatModel
+import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 url_prefix = '/affinite'
+handler = RotatingFileHandler('/var/log/affinite/affinite.log', maxBytes=10000, backupCount=1)
+handler.setLevel(logging.DEBUG)
+app.logger.addHandler(handler)
 
 
 @app.before_request
@@ -79,7 +84,7 @@ def show_graph():
         app.logger.debug("got graph %s" % graph)
     else:
         return list_graphs()
-    return render_template("show_graph.html", graph = graph)
+    return render_template("show_graph.html", graph = graph, graph_name = name)
 
 @app.route(url_prefix+'/data', methods =  ['GET', ])
 def json_data():
@@ -91,6 +96,7 @@ def json_data():
         renderer = request.args.get('renderer')
         gtype = request.args.get('type')
         color = request.args.get('color')
+        graphite_server = request.args.get('graphite_server')
     except Exception, e:
         app.logger.error("Failed to get some data from request %(, %s" % e)
         abort(500)
@@ -103,7 +109,7 @@ def json_data():
 
     # try to build frontstat module from this input
 #    try:
-    stat = FrontStatModel(debug=1)
+    stat = FrontStatModel(debug=1, graphite_server=graphite_server)
     stat.calculate_polyf(x, y, int(pfrom), int(delta))
 #    except Exception, e:
 #        app.logger.error("Failed to build fronstat model %s" % e)
