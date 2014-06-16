@@ -114,7 +114,7 @@ def json_data():
 #        abort(500)
     if gtype == "raw":
         stat.get_raw_data(x, y, int(pfrom), int(delta))
-        raw_data = np.column_stack((stat.d[:,0], stat.d[:,1]))
+        raw_data = stat.d
     elif re.match('polyfit (\d+)',gtype):
         degree = re.match('polyfit (\d+)',gtype).group(1)
         if not degree:
@@ -125,7 +125,22 @@ def json_data():
     elif gtype == "weighted":
         stat.calculate_weighted(x, y, int(pfrom), int(delta))
         raw_data = np.column_stack((stat.weighted_data[:,0], stat.weighted_data[:,1]))
-    
+    elif gtype == "curve fit linear":
+        stat.calculate_curve_fit_linear(x, y, int(pfrom), int(delta))
+        raw_data = np.column_stack((stat.fitted_data[:,0], stat.fitted_data[:,1]))
+    elif gtype == "curve fit simple":
+        stat.calculate_curve_fit_simple(x, y, int(pfrom), int(delta))
+        raw_data = np.column_stack((stat.fitted_data[:,0], stat.fitted_data[:,1]))
+    elif gtype == "curve fit tanh":
+        stat.calculate_curve_fit_tanh(x, y, int(pfrom), int(delta))
+        raw_data = np.column_stack((stat.fitted_data[:,0], stat.fitted_data[:,1]))
+    elif gtype == "curve fit exp":
+        stat.calculate_curve_fit_exp(x, y, int(pfrom), int(delta))
+        raw_data = np.column_stack((stat.fitted_data[:,0], stat.fitted_data[:,1]))
+
+
+
+
     # remove NaNs
     datapoints =  []
     for rx,ry in raw_data.tolist():

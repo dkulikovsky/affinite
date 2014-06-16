@@ -109,6 +109,57 @@ class FrontStatModel():
         self.weighted_data = self.get_strong_points()
         return 1
 
+    def calculate_curve_fit_linear(self, x, y, pfrom, delta):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        def func(x, k, b):
+            return k*x + b
+        p0 = np.array([1,1])
+        cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
+        fitted_y = []
+        for i in self.d[:,0]:
+            fitted_y.append(func(i,*cf))
+        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        return 1
+
+    def calculate_curve_fit_simple(self, x, y, pfrom, delta):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        def func(x, k, b, xmax, A):
+            return k*x + b + (A/(xmax - x))
+        p0 = np.array([1,1,1,1])
+        cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
+        fitted_y = []
+        for i in self.d[:,0]:
+            fitted_y.append(func(i,*cf))
+        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        return 1
+
+    def calculate_curve_fit_tanh(self, x, y, pfrom, delta):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        p0 = np.array([1,1,1,1000,10,1])
+        def func(x, A, B, C, D, E, F):
+            return (A + B*x + C*np.power(x,2)) * (D + E * np.tanh( F * x))
+        cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
+        fitted_y = []
+        for i in self.d[:,0]:
+            fitted_y.append(func(i,*cf))
+        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        return 1
+
+    def calculate_curve_fit_exp(self, x, y, pfrom, delta):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        def func(x, A, B, C, D):
+            return A*x + B + np.exp((x-C)*D)
+        p0 = np.array([1,1,1,1])
+        cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
+        fitted_y = []
+        for i in self.d[:,0]:
+            fitted_y.append(func(i,*cf))
+        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        return 1
 
     def get_raw_data(self, x, y, pfrom, delta):
         self.pfrom = pfrom
