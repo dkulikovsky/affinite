@@ -34,6 +34,12 @@
 	    element: document.querySelector('#legend')
 	});
 
+    var slider = new Rickshaw.Graph.RangeSlider({
+        graph: graph,
+        element: document.querySelector('#slider')
+    });
+
+    var palette = new Rickshaw.Color.Palette();
     // all graphs will be stored in this hash
     // it's used to rebuild graphs with cleaning old data
     var graphs_view_hash = {};
@@ -46,6 +52,10 @@
 	        dataType: 'json', // added data type
 	        success: function(res) {
                 res.name = graph_name;
+                if (res.color == 'random') {
+                    res.color = palette.color();
+                    console.log('color'+res.color);
+                }
 	            graphs_data_hash[graph_id] = res;
                 render_graph();
             },

@@ -95,7 +95,7 @@ def json_data():
         app.logger.error("Failed to get some data from request %(, %s" % e)
         abort(500)
     
-    for item in [x, y, pfrom, delta, renderer, gtype, color]:
+    for item in [x, y, pfrom, delta, renderer, gtype]:
         app.logger.debug(item)
         if not item:
             app.logger.error("not all options defined")
@@ -112,9 +112,6 @@ def json_data():
         raw_data = np.column_stack((stat.d[:,0], stat.d[:,1]))
     elif gtype == "polyfit":
         raw_data = np.column_stack((stat.d[:,0], stat.f(stat.d[:,0])))
-
-    if color == "random":
-        color = "palette.color()"
 
     data = { "data": [ { "x": x, "y": y } for x,y in raw_data.tolist() ],
              "renderer": renderer,

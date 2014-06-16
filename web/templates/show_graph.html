@@ -1,23 +1,5 @@
 {% include 'header.html' %}
-            <!-- graph itself -->
-            <p id="chart_paragraph">
-				<h1>
-					Super puper graph!
-				</h1>
-
-				<body>
-                <div class="row">
-                    <div class="col-xs-11">
-				    	<div id="chart"></div> 
-                    </div>
-                    <div class="col-xs-1">
-                    <div id="legend"></div>
-                    </div>
-                </div>
-				</body>
-			</p>
-            <p class="bg-danger logging_p"></p>
-
+{% include 'chart.html' %}
          <div id="data_container">
          </div> <!-- END of data_container -->
          <p class="text-right"><button class="btn btn-default" id="add_data_button">Add data</button></p> 
@@ -79,6 +61,7 @@
                   <div class="col-xs-2">
 		                <label for="color">Color</label>
 						<select id="color" class="form-control">
+                          <option selected>random</option>                                
 						  <option>red</option>
 						  <option>green</option>
 						  <option>blue</option>

@@ -9,6 +9,9 @@
         var delta = p.find("#delta").val();
         var func = p.find("#gtype").val();
         var color = p.find("#color").val();
+        if (color == 'random') {
+                color = palette.color();
+        }
         var renderer = p.find("#renderer").val();
         var graph_name = p.find("#graph_name").val();
         
