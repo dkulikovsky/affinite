@@ -72,5 +72,13 @@
         }
     }
 
+    function set_global_date(frm) {
+        var global_date = $('.global_date_picker').data('DateTimePicker').getDate();
+        $('.datetimepicker1').each( function (index) {
+            $( this ).data('DateTimePicker').setDate(global_date);
+            submit_data($( this ).parents('.row'));
+        });
+    }
+
 </script>
 	

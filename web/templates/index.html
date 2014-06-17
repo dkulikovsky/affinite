@@ -1,6 +1,19 @@
 {% include 'header.html' %} 
 {% include 'chart.html' %}
          <div id="data_container">
+           <!-- global params selector -->
+                <form role='form' class='form-horizontal'>
+                  <div class='form-group'>
+                    <label for='global_date_picker col-sm-3'>Global date:</label>
+                    <div class='col-sm-3 input-group date global_date_picker' id='global_date_picker'>
+                      <input type='text' class="form-control" id='global_date_picker_data' />
+        	            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                    </div>
+                    <button type="button" onClick="set_global_date($(this))" class="btn btn-default" aria-hidden="true">Set</button>
+                  </div>
+                </form>
+            <!-- END global params selector -->
+    
                  {% include 'data_form.html' %}
          </div> <!-- END of data_container -->
           <p class="text-right"><button class="btn btn-default" id="add_data_button">Add data</button></p> 
@@ -21,6 +34,11 @@
              pick12HourFormat: false
         });
     };
+    $('.global_date_picker').datetimepicker({
+         defaultDate: moment().subtract('days', 1).format('DD/MM/YY HH:mm'),
+         format: 'DD/MM/YY HH:mm',
+         pick12HourFormat: false
+    });
 
     $(load_datetimePicker);
     $('.graph_div').removeClass('hidden');

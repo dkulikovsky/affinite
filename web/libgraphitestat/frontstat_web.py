@@ -24,11 +24,35 @@ class FrontStatModel():
                 if py > (y-radius) and py < (y+radius):
                     count +=1
         return count
+
+    def get_fattest_point(self, r):
+        radius_x = 20 # +-100 rps
+        max_weight = 0
+        max_x = 0
+        max_y = 0
+        d = self.d
+        d_slice = d[ (d[:,0] > (r - radius_x)) & (d[:,0] < (r + radius_x))]
+        for x, y in d_slice:
+            w = self.weight(d_slice, x, y)
+            if w > max_weight:
+                max_weight = w
+                (max_x, max_y) = (x, y)
+                
+        return (max_x, max_y, max_weight)
+
+    def get_strong_points(self):
+        rps_xs = np.linspace(self.d[:,0].min(), self.d[:,0].max(), 20)
+        weighted_f = []
+        for r in rps_xs:
+            weighted_f.append(self.get_fattest_point(r))
+        weighted_f = np.array(weighted_f)
+        return  weighted_f 
+ 
     # web functions
 
     def get_xmax_xs(self):
-        if self.xmax:
-            self.xs = np.linspace(0,xmax,1000)
+        if self.xmax > 0:
+            self.xs = np.linspace(0,self.xmax,1000)
         else:
             xmax = self.d[:,0].max()
             if xmax < 1:
@@ -40,14 +64,14 @@ class FrontStatModel():
             elif xmax < 50000:
                 xmax = xmax + 5000 - xmax % 5000
             self.xs = np.linspace(0,xmax, 1000)
-        return 1
+            self.logger.debug("Got xs for xmax %s" % xmax)
+        return self.xs
 
     def calculate_polyf(self, x, y, pfrom, delta, degree):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
         self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree))
-        if self.xmax == "on":
-            print "calculating xmax xs"
+        if self.xmax:
             xs = self.get_xmax_xs()
             self.polyf_data = np.column_stack((xs, self.f(xs)))
         else:
@@ -68,9 +92,15 @@ class FrontStatModel():
         p0 = np.array([1,1])
         cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
         fitted_y = []
-        for i in self.d[:,0]:
-            fitted_y.append(func(i,*cf))
-        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        if self.xmax:
+            xs = self.get_xmax_xs()
+            for i in xs:
+                fitted_y.append(func(i, *cf))
+            self.fitted_data = np.column_stack((xs, fitted_y))
+        else:
+            for i in self.d[:,0]:
+                fitted_y.append(func(i,*cf))
+            self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
         return 1
 
     def calculate_curve_fit_simple(self, x, y, pfrom, delta):
@@ -81,9 +111,15 @@ class FrontStatModel():
         p0 = np.array([1,1,1,1])
         cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
         fitted_y = []
-        for i in self.d[:,0]:
-            fitted_y.append(func(i,*cf))
-        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        if self.xmax:
+            xs = self.get_xmax_xs()
+            for i in xs:
+                fitted_y.append(func(i, *cf))
+            self.fitted_data = np.column_stack((xs, fitted_y))
+        else:
+            for i in self.d[:,0]:
+                fitted_y.append(func(i,*cf))
+            self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
         return 1
 
     def calculate_curve_fit_tanh(self, x, y, pfrom, delta):
@@ -94,9 +130,16 @@ class FrontStatModel():
             return (A + B*x + C*np.power(x,2)) * (D + E * np.tanh( F * x))
         cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
         fitted_y = []
-        for i in self.d[:,0]:
-            fitted_y.append(func(i,*cf))
-        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        if self.xmax:
+            xs = self.get_xmax_xs()
+            for i in xs:
+                fitted_y.append(func(i, *cf))
+            self.fitted_data = np.column_stack((xs, fitted_y))
+        else:
+            for i in self.d[:,0]:
+                fitted_y.append(func(i,*cf))
+
+            self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
         return 1
 
     def calculate_curve_fit_exp(self, x, y, pfrom, delta):
@@ -107,9 +150,15 @@ class FrontStatModel():
         p0 = np.array([1,1,1,1])
         cf, matcov = curve_fit(func, self.d[:,0], self.d[:,1], p0, maxfev=5000000)
         fitted_y = []
-        for i in self.d[:,0]:
-            fitted_y.append(func(i,*cf))
-        self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
+        if self.xmax:
+            xs = self.get_xmax_xs()
+            for i in xs:
+                fitted_y.append(func(i, *cf))
+            self.fitted_data = np.column_stack((xs, fitted_y))
+        else:
+            for i in self.d[:,0]:
+                fitted_y.append(func(i,*cf))
+            self.fitted_data = np.column_stack((self.d[:,0], fitted_y))
         return 1
 
     def get_raw_data(self, x, y, pfrom, delta):
@@ -192,29 +241,6 @@ class FrontStatModel():
         plt.plot(weighted_data[:,0],weighted_data[:,1], label=title, linewidth=1)
         return 1
 
-    def get_fattest_point(self, r):
-        radius_x = 20 # +-100 rps
-        max_weight = 0
-        max_x = 0
-        max_y = 0
-        d = self.d
-        d_slice = d[ (d[:,0] > (r - radius_x)) & (d[:,0] < (r + radius_x))]
-        for x, y in d_slice:
-            w = self.weight(d_slice, x, y)
-            if w > max_weight:
-                max_weight = w
-                (max_x, max_y) = (x, y)
-                
-        return (max_x, max_y, max_weight)
-
-    def get_strong_points(self):
-        rps_xs = np.linspace(self.d[:,0].min(), self.d[:,0].max(), 20)
-        weighted_f = []
-        for r in rps_xs:
-            weighted_f.append(self.get_fattest_point(r))
-        weighted_f = np.array(weighted_f)
-        return  weighted_f 
-     
     def draw_multi_graphs(self, x, y, pfrom, title):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom)

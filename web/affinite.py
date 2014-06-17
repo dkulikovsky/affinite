@@ -114,8 +114,10 @@ def json_data():
 
     # try to build frontstat module from this input
 #    try:
+    if not xmax:
+        xmax = 0
     print "got xmax %s" % xmax
-    stat = FrontStatModel(debug=1, logger=app.logger, graphite_server=graphite_server, xmax = xmax)
+    stat = FrontStatModel(debug=1, logger=app.logger, graphite_server=graphite_server, xmax = int(xmax))
 #    except Exception, e:
 #        app.logger.error("Failed to build fronstat model %s" % e)
 #        abort(500)
@@ -128,7 +130,7 @@ def json_data():
             app.logger.error("polynomial degree is not defined")
             return json.dumps({ "status": "error", "msg": "polynomial degree is not defined"})
         stat.calculate_polyf(x, y, int(pfrom), int(delta), int(degree))
-        raw_data = np.column_stack((stat.d[:,0], stat.f(stat.d[:,0])))
+        raw_data = np.column_stack((stat.polyf_data[:,0], stat.polyf_data[:,1]))
     elif gtype == "weighted":
         stat.calculate_weighted(x, y, int(pfrom), int(delta))
         raw_data = np.column_stack((stat.weighted_data[:,0], stat.weighted_data[:,1]))
