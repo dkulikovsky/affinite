@@ -16,7 +16,7 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.config.from_object(__name__)
 url_prefix = '/affinite'
-handler = RotatingFileHandler('/var/log/affinite/affinite.log', maxBytes=10000, backupCount=1)
+handler = RotatingFileHandler('./affinite.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.DEBUG)
 app.logger.addHandler(handler)
 
@@ -95,6 +95,7 @@ def json_data():
         renderer = request.args.get('renderer')
         gtype = request.args.get('type')
         color = request.args.get('color')
+        extended = request.args.get('extended')
         graphite_server = request.args.get('graphite_server')
     except Exception, e:
         app.logger.error("Failed to get some data from request %(, %s" % e)
@@ -108,7 +109,8 @@ def json_data():
 
     # try to build frontstat module from this input
 #    try:
-    stat = FrontStatModel(debug=1, graphite_server=graphite_server)
+    print "got extended %s" % extended
+    stat = FrontStatModel(debug=1, logger=app.logger, graphite_server=graphite_server, extended = extended)
 #    except Exception, e:
 #        app.logger.error("Failed to build fronstat model %s" % e)
 #        abort(500)
@@ -153,10 +155,10 @@ def json_data():
 
     return json.dumps(data)
    
-#@app.route('/gstat_static/<path:filename>')
-#def send_pic(filename):
-#    return send_from_directory('./resources/', filename)
-# 
+@app.route('/gstat_static/<path:filename>')
+def send_pic(filename):
+    return send_from_directory('./resources/', filename)
+ 
 if __name__ == '__main__':
     app.debug = True
     app.run(host='0.0.0.0')

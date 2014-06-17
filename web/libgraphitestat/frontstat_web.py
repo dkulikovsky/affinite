@@ -8,10 +8,13 @@ from  libgraphitestat.functions import *
 from math import exp
 
 class FrontStatModel():
-    def __init__(self, debug, ylim = 0, graphite_server='bsgraphite.yandex-team.ru'):
+    def __init__(self, debug, logger, ylim = 0, graphite_server='bsgraphite.yandex-team.ru', extended = 0):
         self.debug = debug
         self.ylim = ylim
         self.graphite_server = graphite_server
+        self.extended = extended
+        print "extended %s" % self.extended
+        self.logger = logger
 
     def weight(self, d, x, y):
         radius = 50 # +-100 rps and ms
@@ -21,86 +24,31 @@ class FrontStatModel():
                 if py > (y-radius) and py < (y+radius):
                     count +=1
         return count
+    # web functions
 
-    def draw_single_graph(self, x, y, pfrom, title):
-        self.pfrom = pfrom
-        self.get_xy_data(x, y, pfrom)
-        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 5))
-        self.single_raw_polyf_graph(title)
-        return 1
-
-    def draw_multi_graphs_weighted_polyf(self, x, y, pfrom, title):
-        self.pfrom = pfrom
-        self.get_xy_data(x, y, pfrom)
-        self.multi_weighted_graph_polyf(title)
-        return 1
-
-    def multi_weighted_graph_polyf(self, title):
-        self.set_default_params() # it will set internal vars xs, ylim and so on
-        weighted_data = self.get_strong_points()
-        self.f = np.poly1d(np.polyfit(weighted_data[:,0], weighted_data[:,1], 2))
-        plt.plot(weighted_data[:,0],self.f(weighted_data[:,0]), label=title, linewidth=1)
-        return 1
-
-    def draw_multi_graphs_weighted(self, x, y, pfrom, title):
-        self.pfrom = pfrom
-        self.get_xy_data(x, y, pfrom)
-        self.multi_weighted_graph(title)
-        return 1
-
-    def multi_weighted_graph(self, title):
-        self.set_default_params() # it will set internal vars xs, ylim and so on
-        weighted_data = self.get_strong_points()
-        plt.plot(weighted_data[:,0],weighted_data[:,1], label=title, linewidth=1)
-        return 1
-
-    def get_fattest_point(self, r):
-        radius_x = 20 # +-100 rps
-        max_weight = 0
-        max_x = 0
-        max_y = 0
-        d = self.d
-        d_slice = d[ (d[:,0] > (r - radius_x)) & (d[:,0] < (r + radius_x))]
-        for x, y in d_slice:
-            w = self.weight(d_slice, x, y)
-            if w > max_weight:
-                max_weight = w
-                (max_x, max_y) = (x, y)
-                
-        return (max_x, max_y, max_weight)
-
-    def get_strong_points(self):
-        rps_xs = np.linspace(self.d[:,0].min(), self.d[:,0].max(), 20)
-        weighted_f = []
-        for r in rps_xs:
-            weighted_f.append(self.get_fattest_point(r))
-        weighted_f = np.array(weighted_f)
-        return  weighted_f 
-     
-    def draw_multi_graphs(self, x, y, pfrom, title):
-        self.pfrom = pfrom
-        self.get_xy_data(x, y, pfrom)
-        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 5))
-        self.multi_polyf_graph(title)
-        return 1
-
-    def multi_polyf_graph(self, title):
-        self.set_default_params() # it will set internal vars xs, ylim and so on
-        plt.plot(self.d[:,0], self.f(self.d[:,0]), label=title, linewidth=1)
-        return 1
-
-    def draw_diff_polyf_graphs(self, sub, x,y, pfrom, title):
-        self.pfrom = pfrom
-        self.get_xy_data(x, y, pfrom)
-        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 2))
-        res = [ [i, (self.f(i)/sub.f(i))] for i in self.d[:,0] ]
-        plt.plot(self.d[:,0], res, label=title, linewidth=1)
+    def get_extended_xs(self):
+        xmax = self.d[:,0].max()
+        if xmax < 1:
+            xmax = 1
+        elif xmax < 1000:
+            xmax = xmax + 100 - xmax % 100
+        elif xmax < 10000:
+            xmax = xmax + 1000 - xmax % 1000
+        elif xmax < 50000:
+            xmax = xmax + 5000 - xmax % 5000
+        self.xs = np.linspace(0,xmax, 1000)
         return 1
 
     def calculate_polyf(self, x, y, pfrom, delta, degree):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
         self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree))
+        if self.extended == "on":
+            print "calculating extended xs"
+            xs = self.get_extended_xs()
+            self.polyf_data = np.column_stack((xs, self.f(xs)))
+        else:
+            self.polyf_data = np.column_stack((self.d[:,0], self.f(self.d[:,0])))
         return 1
 
     def calculate_weighted(self, x, y, pfrom, delta):
@@ -206,3 +154,82 @@ class FrontStatModel():
                 ymax = ymax + 5000 - ymax % 5000
             self.ylim = ymax
         return 1
+
+
+    # legacy for mathplot
+    def draw_single_graph(self, x, y, pfrom, title):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom)
+        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 5))
+        self.single_raw_polyf_graph(title)
+        return 1
+
+    def draw_multi_graphs_weighted_polyf(self, x, y, pfrom, title):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom)
+        self.multi_weighted_graph_polyf(title)
+        return 1
+
+    def multi_weighted_graph_polyf(self, title):
+        self.set_default_params() # it will set internal vars xs, ylim and so on
+        weighted_data = self.get_strong_points()
+        self.f = np.poly1d(np.polyfit(weighted_data[:,0], weighted_data[:,1], 2))
+        plt.plot(weighted_data[:,0],self.f(weighted_data[:,0]), label=title, linewidth=1)
+        return 1
+
+    def draw_multi_graphs_weighted(self, x, y, pfrom, title):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom)
+        self.multi_weighted_graph(title)
+        return 1
+
+    def multi_weighted_graph(self, title):
+        self.set_default_params() # it will set internal vars xs, ylim and so on
+        weighted_data = self.get_strong_points()
+        plt.plot(weighted_data[:,0],weighted_data[:,1], label=title, linewidth=1)
+        return 1
+
+    def get_fattest_point(self, r):
+        radius_x = 20 # +-100 rps
+        max_weight = 0
+        max_x = 0
+        max_y = 0
+        d = self.d
+        d_slice = d[ (d[:,0] > (r - radius_x)) & (d[:,0] < (r + radius_x))]
+        for x, y in d_slice:
+            w = self.weight(d_slice, x, y)
+            if w > max_weight:
+                max_weight = w
+                (max_x, max_y) = (x, y)
+                
+        return (max_x, max_y, max_weight)
+
+    def get_strong_points(self):
+        rps_xs = np.linspace(self.d[:,0].min(), self.d[:,0].max(), 20)
+        weighted_f = []
+        for r in rps_xs:
+            weighted_f.append(self.get_fattest_point(r))
+        weighted_f = np.array(weighted_f)
+        return  weighted_f 
+     
+    def draw_multi_graphs(self, x, y, pfrom, title):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom)
+        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 5))
+        self.multi_polyf_graph(title)
+        return 1
+
+    def multi_polyf_graph(self, title):
+        self.set_default_params() # it will set internal vars xs, ylim and so on
+        plt.plot(self.d[:,0], self.f(self.d[:,0]), label=title, linewidth=1)
+        return 1
+
+    def draw_diff_polyf_graphs(self, sub, x,y, pfrom, title):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom)
+        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], 2))
+        res = [ [i, (self.f(i)/sub.f(i))] for i in self.d[:,0] ]
+        plt.plot(self.d[:,0], res, label=title, linewidth=1)
+        return 1
+
+
