@@ -36,6 +36,13 @@
         console.log("got default date "+default_date);
     };
 
+    $('.global_date_picker').datetimepicker({
+         defaultDate: moment().subtract('days', 1).format('DD/MM/YY HH:mm'),
+         format: 'DD/MM/YY HH:mm',
+         pick12HourFormat: false
+    });
+
+
     $(load_datetimePicker);
 
     // set graph name in save form

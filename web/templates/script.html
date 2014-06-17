@@ -11,13 +11,11 @@
 	graph.render();
 	
 	var hoverDetail = new Rickshaw.Graph.HoverDetail( {
-	    graph: graph
+	    graph: graph,
+        xFormatter: function(x) { return x},
+        yFormatter: function(y) { return y}
 	} );
-	
-	var hoverDetail = new Rickshaw.Graph.HoverDetail( {
-	    graph: graph
-	} );
-	
+
 	var xAxis = new Rickshaw.Graph.Axis.X({
 	    graph: graph
 	});
@@ -39,6 +37,11 @@
         element: document.querySelector('#slider')
     });
 
+    var order = new Rickshaw.Graph.Behavior.Series.Order( {
+        graph: graph,
+        legend: legend
+    } );
+    
     var palette = new Rickshaw.Color.Palette();
     // all graphs will be stored in this hash
     // it's used to rebuild graphs with cleaning old data
@@ -76,6 +79,9 @@
     	xAxis.render();
     	yAxis.render();
         legend.render();
+        console.log("current height "+$('#legend').height())
+        $('#legend').height(legend.lines.length*15);
+        console.log("new height "+$('#legend').height())
         graph.update();
     }
 
