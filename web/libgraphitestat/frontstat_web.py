@@ -17,7 +17,7 @@ class FrontStatModel():
         self.logger = logger
 
     def weight(self, d, x, y):
-        radius = 50 # +-100 rps and ms
+        radius = self.get_radius() # +-100 rps and ms
         count = 0
         for px,py in d:
             if px > (x-radius) and px < (x+radius):
@@ -26,7 +26,7 @@ class FrontStatModel():
         return count
 
     def get_fattest_point(self, r):
-        radius_x = 20 # +-100 rps
+        radius_x = self.get_radius() # +-100 rps
         max_weight = 0
         max_x = 0
         max_y = 0
@@ -39,6 +39,10 @@ class FrontStatModel():
                 (max_x, max_y) = (x, y)
                 
         return (max_x, max_y, max_weight)
+
+    def get_radius(self):
+        radius = (self.d[:,0].max() - self.d[:,0].min())*0.05 # 5% of whole spread
+        return radius
 
     def get_strong_points(self):
         rps_xs = np.linspace(self.d[:,0].min(), self.d[:,0].max(), 20)
