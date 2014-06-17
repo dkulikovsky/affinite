@@ -16,7 +16,12 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.config.from_object(__name__)
 url_prefix = '/affinite'
-handler = RotatingFileHandler('/var/log/affinite/affinite.log', maxBytes=10000, backupCount=1)
+
+if __name__ == "__main__":
+    handler = RotatingFileHandler('./affinite.log', maxBytes=10000, backupCount=1)
+else:
+    handler = RotatingFileHandler('/var/log/affinite/affinite.log', maxBytes=10000, backupCount=1)
+
 handler.setLevel(logging.DEBUG)
 app.logger.addHandler(handler)
 
@@ -160,6 +165,9 @@ def json_data():
 #    return send_from_directory('./resources/', filename)
  
 if __name__ == '__main__':
+    @app.route('/gstat_static/<path:filename>')
+    def send_pic(filename):
+        return send_from_directory('./resources/', filename)
+
     app.debug = True
     app.run(host='0.0.0.0')
-   
