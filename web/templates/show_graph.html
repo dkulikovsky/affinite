@@ -36,7 +36,7 @@
                 var form_html = $('.graph_div:last').clone(false).appendTo('#data_container');
                 form_html.find('.graph_id').val(k);
                 form_html.find('#color').val(graphs_view_hash[k].color);
-                form_html.find('#extended').val(graphs_view_hash[k].extended);
+                form_html.find('#xmax').val(graphs_view_hash[k].xmax);
                 form_html.find('#graphite_server').val(graphs_view_hash[k].graphite_server);
                 form_html.find('#delta').val(graphs_view_hash[k].delta);
                 form_html.find('#graph_name').val(graphs_view_hash[k].graph_name);

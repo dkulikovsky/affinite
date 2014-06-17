@@ -8,12 +8,12 @@ from  libgraphitestat.functions import *
 from math import exp
 
 class FrontStatModel():
-    def __init__(self, debug, logger, ylim = 0, graphite_server='bsgraphite.yandex-team.ru', extended = 0):
+    def __init__(self, debug, logger, ylim = 0, graphite_server='bsgraphite.yandex-team.ru', xmax = 0):
         self.debug = debug
         self.ylim = ylim
         self.graphite_server = graphite_server
-        self.extended = extended
-        print "extended %s" % self.extended
+        self.xmax = xmax
+        print "xmax %s" % self.xmax
         self.logger = logger
 
     def weight(self, d, x, y):
@@ -26,26 +26,29 @@ class FrontStatModel():
         return count
     # web functions
 
-    def get_extended_xs(self):
-        xmax = self.d[:,0].max()
-        if xmax < 1:
-            xmax = 1
-        elif xmax < 1000:
-            xmax = xmax + 100 - xmax % 100
-        elif xmax < 10000:
-            xmax = xmax + 1000 - xmax % 1000
-        elif xmax < 50000:
-            xmax = xmax + 5000 - xmax % 5000
-        self.xs = np.linspace(0,xmax, 1000)
+    def get_xmax_xs(self):
+        if self.xmax:
+            self.xs = np.linspace(0,xmax,1000)
+        else:
+            xmax = self.d[:,0].max()
+            if xmax < 1:
+                xmax = 1
+            elif xmax < 1000:
+                xmax = xmax + 100 - xmax % 100
+            elif xmax < 10000:
+                xmax = xmax + 1000 - xmax % 1000
+            elif xmax < 50000:
+                xmax = xmax + 5000 - xmax % 5000
+            self.xs = np.linspace(0,xmax, 1000)
         return 1
 
     def calculate_polyf(self, x, y, pfrom, delta, degree):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
         self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree))
-        if self.extended == "on":
-            print "calculating extended xs"
-            xs = self.get_extended_xs()
+        if self.xmax == "on":
+            print "calculating xmax xs"
+            xs = self.get_xmax_xs()
             self.polyf_data = np.column_stack((xs, self.f(xs)))
         else:
             self.polyf_data = np.column_stack((self.d[:,0], self.f(self.d[:,0])))

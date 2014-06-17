@@ -10,11 +10,11 @@
         var func = p.find("#gtype").val();
         var graphite_server = p.find("#graphite_server").val();
         var color = p.find("#color").val();
-        var extended = p.find("#extended").val();
+        var xmax = p.find("#xmax").val();
         var renderer = p.find("#renderer").val();
         var graph_name = p.find("#graph_name").val();
         
-        var url = "/affinite/data?x_metric="+x_metric+"&y_metric="+y_metric+"&from="+from+"&renderer="+renderer+"&delta="+delta+"&type="+func+"&extended="+extended+"&graphite_server="+graphite_server+"&color="+color;
+        var url = "/affinite/data?x_metric="+x_metric+"&y_metric="+y_metric+"&from="+from+"&renderer="+renderer+"&delta="+delta+"&type="+func+"&xmax="+xmax+"&graphite_server="+graphite_server+"&color="+color;
 
         graph_id = p.find('.graph_id').val();
         if (!graph_id) {
@@ -26,7 +26,7 @@
 
         graphs_view_hash[graph_id] = {
                 "x": x_metric, "y": y_metric,
-                "from": from, "delta": delta, "extended": extended,
+                "from": from, "delta": delta, "xmax": xmax,
                 "func": func, "color": color, "graphite_server": graphite_server,
                 "renderer": renderer, "url": url,
                 "graph_name": graph_name };
