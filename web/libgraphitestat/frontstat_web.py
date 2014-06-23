@@ -15,6 +15,7 @@ class FrontStatModel():
         self.xmax = xmax
         print "xmax %s" % self.xmax
         self.logger = logger
+        self.workers = []
 
     def weight(self, d, x, y):
         radius_x = self.get_x_radius() # +-100 rps and ms
@@ -33,30 +34,29 @@ class FrontStatModel():
         max_y = 0
         d = self.d
         d_slice = d[ (d[:,0] > (r - radius_x)) & (d[:,0] < (r + radius_x))]
-        self.logger.error("DEBUG: going through d_slice %s, for r %s, radius %s" % (d_slice,r, radius_x))
         start_t = time.time()
         for x, y in d_slice:
             w = self.weight(d_slice, x, y)
             if w > max_weight:
                 max_weight = w
                 (max_x, max_y) = (x, y)
-        self.logger.error("DEBUG: spent in for x,y d_slice %s" % (time.time() - start_t))
-        return (max_x, max_y)
+        self.logger.error("DEBUG: spent in for x,y d_slice %.3f, for slice len = %d" % ((time.time() - start_t), len(d_slice)))
+        return (max_x, max_y, max_weight)
 
     def get_x_radius(self):
         data_min = np.nanmin(self.d[:,0])
         data_max = np.nanmax(self.d[:,0])
-        radius = (data_max - data_min)*0.05 # 5% of whole spread
+        radius = (data_max - data_min)*0.01 # 5% of whole spread
         return radius
 
     def get_y_radius(self):
         data_min = np.nanmin(self.d[:,1])
         data_max = np.nanmax(self.d[:,1])
-        radius = (data_max - data_min)*0.05 # 5% of whole spread
+        radius = (data_max - data_min)*0.01 # 5% of whole spread
         return radius
 
     def get_strong_points(self):
-        rps_xs = np.linspace(np.nanmin(self.d[:,0]), np.nanmax(self.d[:,0]), 20)
+        rps_xs = np.linspace(np.nanmin(self.d[:,0]), np.nanmax(self.d[:,0]), 100)
         weighted_f = []
         for r in rps_xs:
             weighted_f.append(self.get_fattest_point(r))
@@ -84,12 +84,15 @@ class FrontStatModel():
     def calculate_polyf(self, x, y, pfrom, delta, degree):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
-        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree))
+        self.logger.debug("y = [ %s ]" % self.d[:,1])
+        self.f = np.poly1d(np.polyfit(x=self.d[:,0],y=self.d[:,1], deg=degree))
+        self.logger.debug("test: %s" % self.f(600))
         if self.xmax:
             xs = self.get_xmax_xs()
             self.polyf_data = np.column_stack((xs, self.f(xs)))
         else:
             self.polyf_data = np.column_stack((self.d[:,0], self.f(self.d[:,0])))
+        self.logger.debug("DEBUG: got data from polyf: [ %s ]" % self.polyf_data)
         return 1
 
     def calculate_polyf_weighted(self, x, y, pfrom, delta, degree):
@@ -99,7 +102,8 @@ class FrontStatModel():
         for r in self.d[:,0]:
             weighted_f.append(self.get_fattest_point(r))
         weighted_f = np.array(weighted_f)
-        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree, w=weighted_f))
+        self.logger.debug("weighted: %s" % weighted_f)
+        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree, w=weighted_f[:,2]))
         if self.xmax:
             xs = self.get_xmax_xs()
             self.polyf_data = np.column_stack((xs, self.f(xs)))
@@ -110,8 +114,7 @@ class FrontStatModel():
     def calculate_weighted(self, x, y, pfrom, delta):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
-        self.weighted_data = self.get_strong_points()
-        self.logger.error("DEBUG: data [ %s ]" % self.weighted_data)
+        self.weighted_data = np.array(sorted(self.get_strong_points(), key=lambda a_entry: a_entry[0]))
         return 1
 
     def calculate_curve_fit_linear(self, x, y, pfrom, delta):
@@ -200,6 +203,8 @@ class FrontStatModel():
     def get_xy_data(self, x_metric, y_metric, pfrom, delta=86400):
         x = np.array(graphite_data(self.graphite_server, x_metric, pfrom, pfrom + delta))
         y = np.array(graphite_data(self.graphite_server, y_metric, pfrom, pfrom + delta))
+        x = np.nan_to_num(x)
+        y = np.nan_to_num(y)
         if y.shape[0] != x.shape[0]:
             y = y[:x.shape[0]]
         d = np.column_stack((x,y))

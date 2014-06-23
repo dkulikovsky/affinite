@@ -132,7 +132,7 @@ def json_data():
         stat.calculate_polyf(x, y, int(pfrom), int(delta), int(degree))
         raw_data = np.column_stack((stat.polyf_data[:,0], stat.polyf_data[:,1]))
     elif re.match('polyfit weighted (\d+)',gtype):
-        degree = re.match('polyfit (\d+)',gtype).group(1)
+        degree = re.match('polyfit weighted (\d+)',gtype).group(1)
         if not degree:
             app.logger.error("polynomial degree is not defined")
             return json.dumps({ "status": "error", "msg": "polynomial degree is not defined"})
@@ -154,9 +154,6 @@ def json_data():
         stat.calculate_curve_fit_exp(x, y, int(pfrom), int(delta))
         raw_data = np.column_stack((stat.fitted_data[:,0], stat.fitted_data[:,1]))
 
-
-
-
     # remove NaNs
     datapoints =  []
     for rx,ry in raw_data.tolist():
@@ -169,10 +166,6 @@ def json_data():
 
     return json.dumps(data)
    
-#@app.route('/gstat_static/<path:filename>')
-#def send_pic(filename):
-#    return send_from_directory('./resources/', filename)
- 
 if __name__ == '__main__':
     @app.route('/gstat_static/<path:filename>')
     def send_pic(filename):
