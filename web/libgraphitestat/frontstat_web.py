@@ -17,32 +17,42 @@ class FrontStatModel():
         self.logger = logger
 
     def weight(self, d, x, y):
-        radius = self.get_radius() # +-100 rps and ms
+        radius_x = self.get_x_radius() # +-100 rps and ms
+        radius_y = self.get_y_radius()
         count = 0
         for px,py in d:
-            if px > (x-radius) and px < (x+radius):
-                if py > (y-radius) and py < (y+radius):
+            if px > (x-radius_x) and px < (x+radius_x):
+                if py > (y-radius_y) and py < (y+radius_y):
                     count +=1
         return count
 
     def get_fattest_point(self, r):
-        radius_x = self.get_radius() # +-100 rps
+        radius_x = self.get_x_radius() # +-100 rps
         max_weight = 0
         max_x = 0
         max_y = 0
         d = self.d
         d_slice = d[ (d[:,0] > (r - radius_x)) & (d[:,0] < (r + radius_x))]
         self.logger.error("DEBUG: going through d_slice %s, for r %s, radius %s" % (d_slice,r, radius_x))
+        start_t = time.time()
         for x, y in d_slice:
             w = self.weight(d_slice, x, y)
             if w > max_weight:
                 max_weight = w
                 (max_x, max_y) = (x, y)
-                
-        return (max_x, max_y, max_weight)
+        self.logger.error("DEBUG: spent in for x,y d_slice %s" % (time.time() - start_t))
+        return (max_x, max_y)
 
-    def get_radius(self):
-        radius = (np.nanmax(self.d[:,0]) - np.nanmin(self.d[:,0]))*0.05 # 5% of whole spread
+    def get_x_radius(self):
+        data_min = np.nanmin(self.d[:,0])
+        data_max = np.nanmax(self.d[:,0])
+        radius = (data_max - data_min)*0.05 # 5% of whole spread
+        return radius
+
+    def get_y_radius(self):
+        data_min = np.nanmin(self.d[:,1])
+        data_max = np.nanmax(self.d[:,1])
+        radius = (data_max - data_min)*0.05 # 5% of whole spread
         return radius
 
     def get_strong_points(self):
@@ -69,13 +79,27 @@ class FrontStatModel():
             elif xmax < 50000:
                 xmax = xmax + 5000 - xmax % 5000
             self.xs = np.linspace(0,xmax, 1000)
-            self.logger.debug("Got xs for xmax %s" % xmax)
         return self.xs
 
     def calculate_polyf(self, x, y, pfrom, delta, degree):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
         self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree))
+        if self.xmax:
+            xs = self.get_xmax_xs()
+            self.polyf_data = np.column_stack((xs, self.f(xs)))
+        else:
+            self.polyf_data = np.column_stack((self.d[:,0], self.f(self.d[:,0])))
+        return 1
+
+    def calculate_polyf_weighted(self, x, y, pfrom, delta, degree):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        weighted_f = []
+        for r in self.d[:,0]:
+            weighted_f.append(self.get_fattest_point(r))
+        weighted_f = np.array(weighted_f)
+        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree, w=weighted_f))
         if self.xmax:
             xs = self.get_xmax_xs()
             self.polyf_data = np.column_stack((xs, self.f(xs)))

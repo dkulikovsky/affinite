@@ -131,6 +131,13 @@ def json_data():
             return json.dumps({ "status": "error", "msg": "polynomial degree is not defined"})
         stat.calculate_polyf(x, y, int(pfrom), int(delta), int(degree))
         raw_data = np.column_stack((stat.polyf_data[:,0], stat.polyf_data[:,1]))
+    elif re.match('polyfit weighted (\d+)',gtype):
+        degree = re.match('polyfit (\d+)',gtype).group(1)
+        if not degree:
+            app.logger.error("polynomial degree is not defined")
+            return json.dumps({ "status": "error", "msg": "polynomial degree is not defined"})
+        stat.calculate_polyf_weighted(x, y, int(pfrom), int(delta), int(degree))
+        raw_data = np.column_stack((stat.polyf_data[:,0], stat.polyf_data[:,1]))
     elif gtype == "weighted":
         stat.calculate_weighted(x, y, int(pfrom), int(delta))
         raw_data = np.column_stack((stat.weighted_data[:,0], stat.weighted_data[:,1]))
