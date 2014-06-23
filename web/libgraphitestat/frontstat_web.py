@@ -32,6 +32,7 @@ class FrontStatModel():
         max_y = 0
         d = self.d
         d_slice = d[ (d[:,0] > (r - radius_x)) & (d[:,0] < (r + radius_x))]
+        self.logger.error("DEBUG: going through d_slice %s, for r %s, radius %s" % (d_slice,r, radius_x))
         for x, y in d_slice:
             w = self.weight(d_slice, x, y)
             if w > max_weight:
@@ -41,11 +42,11 @@ class FrontStatModel():
         return (max_x, max_y, max_weight)
 
     def get_radius(self):
-        radius = (self.d[:,0].max() - self.d[:,0].min())*0.05 # 5% of whole spread
+        radius = (np.nanmax(self.d[:,0]) - np.nanmin(self.d[:,0]))*0.05 # 5% of whole spread
         return radius
 
     def get_strong_points(self):
-        rps_xs = np.linspace(self.d[:,0].min(), self.d[:,0].max(), 20)
+        rps_xs = np.linspace(np.nanmin(self.d[:,0]), np.nanmax(self.d[:,0]), 20)
         weighted_f = []
         for r in rps_xs:
             weighted_f.append(self.get_fattest_point(r))
@@ -58,7 +59,7 @@ class FrontStatModel():
         if self.xmax > 0:
             self.xs = np.linspace(0,self.xmax,1000)
         else:
-            xmax = self.d[:,0].max()
+            xmax = np.nanmax(self.d[:,0])
             if xmax < 1:
                 xmax = 1
             elif xmax < 1000:
@@ -86,6 +87,7 @@ class FrontStatModel():
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
         self.weighted_data = self.get_strong_points()
+        self.logger.error("DEBUG: data [ %s ]" % self.weighted_data)
         return 1
 
     def calculate_curve_fit_linear(self, x, y, pfrom, delta):
@@ -187,7 +189,7 @@ class FrontStatModel():
         return 1
 
     def set_default_params(self):
-        xmax = self.d[:,0].max()
+        xmax = np.nanmax(self.d[:,0])
 #        if xmax < 1:
 #            xmax = 1
 #        elif xmax < 1000:
@@ -199,7 +201,7 @@ class FrontStatModel():
         self.xs = np.linspace(0,xmax, 1000)
    # if ylim was passed as option, set max to passed ylim
         if self.ylim == 0:
-            ymax = self.d[:,1].max()
+            ymax = np.nanmax(self.d[:,1])
             if ymax < 1:
                 ymax = 1
             elif ymax < 2000:
