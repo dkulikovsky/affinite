@@ -90,6 +90,21 @@ class FrontStatModel():
             self.polyf_data = np.column_stack((self.d[:,0], self.f(self.d[:,0])))
         return 1
 
+    def calculate_polyf_weighted(self, x, y, pfrom, delta, degree):
+        self.pfrom = pfrom
+        self.get_xy_data(x, y, pfrom, delta)
+        weighted_f = []
+        for r in self.d[:,0]:
+            weighted_f.append(self.get_fattest_point(r))
+        weighted_f = np.array(weighted_f)
+        self.f = np.poly1d(np.polyfit(self.d[:,0], self.d[:,1], degree, w=weighted_f))
+        if self.xmax:
+            xs = self.get_xmax_xs()
+            self.polyf_data = np.column_stack((xs, self.f(xs)))
+        else:
+            self.polyf_data = np.column_stack((self.d[:,0], self.f(self.d[:,0])))
+        return 1
+
     def calculate_weighted(self, x, y, pfrom, delta):
         self.pfrom = pfrom
         self.get_xy_data(x, y, pfrom, delta)
