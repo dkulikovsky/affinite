@@ -1,3 +1,21 @@
+affinite (0.1.3) unstable; urgency=low
+
+  * fixed deps 
+
+ -- Kulikovsky Dmitry <dkulikovsky@yandex-team.ru>  Fri, 22 Aug 2014 16:22:07 +0400
+
+affinite (0.1.2) unstable; urgency=low
+
+  * graphs can be changed in show graphs 
+
+ -- Kulikovsky Dmitry <dkulikovsky@yandex-team.ru>  Sun, 15 Jun 2014 17:54:39 +0400
+
+affinite (0.1.1) unstable; urgency=low
+
+  * fixed some stupid bugs 
+
+ -- Kulikovsky Dmitry <dkulikovsky@yandex-team.ru>  Sat, 14 Jun 2014 15:23:23 +0400
+
 affinite (0.1.0) unstable; urgency=low
 
   * initial release 
