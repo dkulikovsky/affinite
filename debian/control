@@ -2,10 +2,10 @@ Source: affinite
 Section: misc
 Priority: extra
 Maintainer: Kulikovsky Dmitry <dkulikovsky@yandex-team.ru>
-Build-Depends: debhelper (>= 5)
+Build-Depends: debhelper (>= 5), yandex-dh-clearvcs
 Standards-Version: 3.7.2
 
 Package: affinite
 Architecture: all
-Depends: python-flask, redis-server, multiwatch, python-redis, python-flup, python-numpy, nginx, python-scipy, python-pandas, spawn-fcgi
+Depends: python-flask, redis-server, multiwatch, python-redis, python-flup, python-numpy, nginx, python-scipy, python-pandas, spawn-fcgi, python-requests
 Description: graphite data in affinite coordinates
