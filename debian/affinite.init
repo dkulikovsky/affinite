@@ -42,6 +42,13 @@ SCRIPTNAME=/etc/init.d/$NAME
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
+# create log dir if needed
+LOGDIR="/var/log/affinite"
+if [ ! -d $LOGDIR ]; then
+        mkdir -p $LOGDIR
+        chown -R www-data:www-data $LOGDIR
+fi
+
 do_start()
 {
 	log_daemon_msg "Starting $DESC: " "$NAME"

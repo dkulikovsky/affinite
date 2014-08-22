@@ -18,6 +18,7 @@ set -e
 # the debian-policy package
 case "$1" in
     configure)
+        mkdir -p /var/www/.matplotlib
         chown -R www-data:www-data /var/www/gstat_static
     ;;
     *)
