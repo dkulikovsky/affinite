@@ -1,3 +1,9 @@
+affinite (0.1.5) unstable; urgency=low
+
+  * added dynamic xy scatter plot 
+
+ -- Kulikovsky Dmitry <dkulikovsky@yandex-team.ru>  Tue, 26 Aug 2014 20:10:27 +0400
+
 affinite (0.1.4) unstable; urgency=low
 
   * fixed folder creation on init 
