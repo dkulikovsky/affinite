@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+.tipsy { padding: 5px; font-size: 10px; position: absolute; z-index: 100000; }
+  .tipsy-inner { padding: 5px 8px 4px 8px; background-color: black; color: white; max-width: 200px; text-align: center; }
+  .tipsy-inner { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; }
+  .tipsy-arrow { position: absolute; background: url('tipsy.gif') no-repeat top left; width: 9px; height: 5px; }
+  .tipsy-n .tipsy-arrow { top: 0; left: 50%; margin-left: -4px; }
+    .tipsy-nw .tipsy-arrow { top: 0; left: 10px; }
+    .tipsy-ne .tipsy-arrow { top: 0; right: 10px; }
+  .tipsy-s .tipsy-arrow { bottom: 0; left: 50%; margin-left: -4px; background-position: bottom left; }
+    .tipsy-sw .tipsy-arrow { bottom: 0; left: 10px; background-position: bottom left; }
+    .tipsy-se .tipsy-arrow { bottom: 0; right: 10px; background-position: bottom left; }
+  .tipsy-e .tipsy-arrow { top: 50%; margin-top: -4px; right: 0; width: 5px; height: 9px; background-position: top right; }
+  .tipsy-w .tipsy-arrow { top: 50%; margin-top: -4px; left: 0; width: 5px; height: 9px; }
+
+</style>
+<body>
+<script src="/gstat_static/js/d3.v3.js"></script>
+<script src="/gstat_static/js/jquery-1.11.1.min.js"></script>
+<script src="/gstat_static/js/tipsy.js"></script>
+<script>
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var param_x_metric = getParameterByName( 'x', 'keepLastValue(five_sec.bscoll-m_prestable_bstest_yandex_net.sc.yabs-collect-antifraud.rows)' );
+var param_y_metric = getParameterByName( 'y', 'five_sec.load.tasktime.bscoll-m_prestable_bstest_yandex_net.LogProcessTime' );
+var param_from = getParameterByName( 'from', '-1d' );
+var param_until = getParameterByName( 'until', 'now' );
+var param_graphite_server = getParameterByName( 'graphite_server', 'bsgraphite-arc01i.yandex.net' );
+
+var url = 'http://jsdev.haze.yandex.net/affinite/data2?x_metric=' + param_x_metric + '&y_metric=' + param_y_metric + '&graphite_server=' + param_graphite_server + '&from=' + param_from + '&until=' + param_until;
+
+
+ // var loader = xhr.get(url);
+ // xhr.on('load', function(e,d){graph_render(d)});
+
+ var data = d3.json(url, function(e,d){render_graph(d)});
+
+ function render_graph(data){
+  x.domain(d3.extent(data, function(d) { return d.x; })).nice();
+  y.domain(d3.extent(data, function(d) { return d.y; })).nice();
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text(param_x_metric);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text(param_y_metric)
+
+  svg.selectAll(".dot")
+      .data(data.sort ( function(a, b) { return d3.ascending(a.username, b.username) }))
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", function(d) { return x(d.x); })
+      .attr("cy", function(d) { return y(d.y); })
+      .style("fill", function(d) { return d3.rgb(d.color); })
+      .style("z-index", function(d) {return d.z});
+
+  var timeFormatter = d3.time.format("%Y-%m-%d %H:%M");
+  var gfeFormatter = d3.time.format("%H:%M%%20%m%%2F%d%%2f%Y");
+
+  svg.selectAll(".dot").append("title")
+   .text(function(d) { var dd = new Date(d.ts*1000); return timeFormatter(dd); });
+
+// http://bsgraphite-gfe01h/?from=20:19%2008%2F18%2F2014&until=20:19%2008%2F25%2F2014&host=bscoll-m2_load_bstest_yandex_net&template=bscoll_load_overview.yml
+  svg.selectAll(".dot").attr("url", function(i, val){
+    return "http://bsgraphite-gfe01h.yandex.ru/?from="
+    + gfeFormatter(new Date((i.ts-900)*1000))
+    + "&until="
+    + gfeFormatter(new Date((i.ts+900)*1000))
+    + "&host=bscoll-m2_load_bstest_yandex_net&template=bscoll_load_overview.yml";
+  } );
+
+  $(".dot").click( function() { window.open( $( this ).attr('url') ); });
+	$(".dot").tipsy({ gravity: 's', });
+}
+
+function getParameterByName(name, default_value) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? default_value : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+</script>
+</body>
+ 
